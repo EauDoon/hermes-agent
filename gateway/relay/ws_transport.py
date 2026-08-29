@@ -314,7 +314,7 @@ def _passthrough_from_wire(raw: Dict[str, Any]) -> PassthroughForward:
 
     body_b64 = raw.get("bodyB64", "") or ""
     try:
-        body = base64.b64decode(body_b64)
+        body = base64.b64decode(body_b64, validate=True)
     except Exception:  # noqa: BLE001 - a malformed body must not crash the reader
         body = b""
     headers_raw = raw.get("headers", []) or []
