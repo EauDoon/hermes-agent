@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import os
 import tempfile
 import threading
@@ -61,11 +62,14 @@ def _load(path: Path) -> dict[str, dict]:
 
 
 def _prune(entries: dict[str, dict], now: float) -> dict[str, dict]:
-    fresh = {
-        key: entry
-        for key, entry in entries.items()
-        if now - float(entry.get("started_at") or 0) <= _MAX_AGE_SECS
-    }
+    fresh: dict[str, dict] = {}
+    for key, entry in entries.items():
+        try:
+            started_at = float(entry.get("started_at") or 0)
+        except (TypeError, ValueError, OverflowError):
+            continue
+        if math.isfinite(started_at) and now - started_at <= _MAX_AGE_SECS:
+            fresh[key] = entry
     if len(fresh) <= _MAX_ENTRIES:
         return fresh
     newest = sorted(
@@ -154,6 +158,8 @@ def read_turn_marker(home: Path | str, session_key: str) -> dict[str, Any] | Non
     try:
         started_at = float(entry.get("started_at") or 0)
         attempts = max(0, int(entry.get("attempts") or 0))
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if not math.isfinite(started_at):
         return None
     return {"attempts": attempts, "prompt": prompt, "started_at": started_at}

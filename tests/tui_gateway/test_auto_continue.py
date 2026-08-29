@@ -18,6 +18,7 @@ time is positive proof the turn never finished. Contract pinned here:
 
 from __future__ import annotations
 
+import json
 import threading
 import time
 import types
@@ -124,6 +125,23 @@ def test_marker_survives_corrupt_sidecar(tmp_path):
 
     assert read_turn_marker(tmp_path, "abc") is None
     record_turn_start(tmp_path, "abc", "prompt")
+    assert read_turn_marker(tmp_path, "abc")["prompt"] == "prompt"
+
+
+def test_marker_survives_malformed_entries(tmp_path):
+    path = tmp_path / "desktop" / "interrupted_turns.json"
+    path.parent.mkdir(parents=True)
+    path.write_text(json.dumps({
+        "text": {"prompt": "old", "started_at": "not-a-number"},
+        "overflow": {"prompt": "old", "started_at": 10 ** 400},
+        "infinite": {"prompt": "old", "started_at": "Infinity"},
+    }))
+
+    assert read_turn_marker(tmp_path, "overflow") is None
+    assert read_turn_marker(tmp_path, "infinite") is None
+
+    record_turn_start(tmp_path, "abc", "prompt")
+
     assert read_turn_marker(tmp_path, "abc")["prompt"] == "prompt"
 
 
@@ -372,5 +390,3 @@ def test_failed_agent_build_leaves_marker_for_retry(
 
 
 # ── End to end: continuation runs a real turn and clears the marker ────
-
-
