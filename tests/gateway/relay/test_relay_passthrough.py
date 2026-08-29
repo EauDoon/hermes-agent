@@ -75,6 +75,11 @@ def test_passthrough_from_wire_byte_preserves_body():
     assert fwd.headers == [("content-type", "application/json")]
 
 
+def test_passthrough_from_wire_rejects_corrupt_base64():
+    fwd = _passthrough_from_wire({"platform": "discord", "bodyB64": "aGVs!bG8="})
+    assert fwd.body == b""
+
+
 @pytest.mark.asyncio
 async def test_connect_wires_passthrough_handler_over_ws(adapter):
     """connect() registers the passthrough handler on the transport so a
@@ -164,5 +169,4 @@ async def test_application_command_subcommand_nesting_renders_names_then_values(
     assert ev.is_command() is True
     assert ev.get_command() == "skill"
     assert ev.get_command_args() == "run deploy"
-
 
