@@ -80,6 +80,18 @@ def test_passthrough_from_wire_rejects_corrupt_base64():
     assert fwd.body == b""
 
 
+def test_passthrough_from_wire_accepts_whitespace_padded_base64():
+    # Line-wrapped MIME-style base64 from third-party SDKs should still decode.
+    fwd = _passthrough_from_wire({"platform": "discord", "bodyB64": "aGVs\nbG8="})
+    assert fwd.body == b"hello"
+
+
+def test_passthrough_from_wire_accepts_unpadded_base64():
+    # Some connectors omit the trailing `=` padding.
+    fwd = _passthrough_from_wire({"platform": "discord", "bodyB64": "aGVsbG8"})
+    assert fwd.body == b"hello"
+
+
 @pytest.mark.asyncio
 async def test_connect_wires_passthrough_handler_over_ws(adapter):
     """connect() registers the passthrough handler on the transport so a

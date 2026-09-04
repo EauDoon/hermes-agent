@@ -139,6 +139,7 @@ def test_marker_survives_malformed_entries(tmp_path):
 
     assert read_turn_marker(tmp_path, "overflow") is None
     assert read_turn_marker(tmp_path, "infinite") is None
+    assert read_turn_marker(tmp_path, "text") is None
 
     record_turn_start(tmp_path, "abc", "prompt")
 

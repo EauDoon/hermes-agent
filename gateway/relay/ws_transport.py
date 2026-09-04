@@ -314,7 +314,12 @@ def _passthrough_from_wire(raw: Dict[str, Any]) -> PassthroughForward:
 
     body_b64 = raw.get("bodyB64", "") or ""
     try:
-        body = base64.b64decode(body_b64, validate=True)
+        # Strip whitespace (line-wrapped MIME-style base64 is still valid)
+        # and add padding if missing before strict validation, so legitimate
+        # connector output is not rejected as corrupt.
+        normalized = "".join(body_b64.split())
+        padding = (-len(normalized)) % 4
+        body = base64.b64decode(normalized + ("=" * padding), validate=True)
     except Exception:  # noqa: BLE001 - a malformed body must not crash the reader
         body = b""
     headers_raw = raw.get("headers", []) or []
