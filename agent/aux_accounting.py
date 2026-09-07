@@ -56,11 +56,14 @@ def set_accounting_context(session_db: Any, session_id: Optional[str]):
 
 
 def reset_accounting_context(token) -> None:
-    """Restore the previous accounting context (pair with ``set_...``)."""
-    try:
-        _accounting.reset(token)
-    except Exception:
-        _accounting.set(None)
+    """Restore the previous accounting context (pair with ``set_...``).
+
+    Lets the underlying :meth:`ContextVar.reset` raise if the token does not
+    belong to this context — swallowing it would silently clear the ambient
+    accounting context for the rest of the turn, hiding a real bug (mismatched
+    token, double-reset, etc.) instead of surfacing it.
+    """
+    _accounting.reset(token)
 
 
 def get_accounting_context() -> Optional[tuple]:
