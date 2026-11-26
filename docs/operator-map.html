@@ -8,100 +8,139 @@
 <style>
 :root {
   color-scheme: dark;
-  --ink: #edf0ea;
-  --muted: #b1beb9;
-  --line: #384843;
+  --ink: #f2f4ed;
+  --muted: #b1c3b9;
+  --line: #354941;
   --gold: #ffd17e;
   --mint: #81e3bb;
-  --paper: #111b19;
+  --paper: #101e19;
   --mono: ui-monospace, Consolas, monospace;
-  font: 16px/1.55 system-ui, sans-serif;
+  font: 16px/1.5 system-ui, sans-serif;
 }
 * { box-sizing: border-box }
 [hidden] { display: none !important }
-body { margin: 0; background: #0a1412; color: var(--ink) }
-main, header { max-width: 78rem; margin: auto; padding: 0 clamp(1rem, 4vw, 4rem) }
-header { display: flex; align-items: center; justify-content: space-between; min-height: 4rem; gap: 1rem; border-bottom: 1px solid var(--line) }
-header span, .meta, label, .source, .legend { font: .82rem/1.6 var(--mono) }
+body { margin: 0; background: #09140f; color: var(--ink) }
+main, header { max-width: 85rem; margin: auto; padding-inline: clamp(1rem, 4vw, 4rem) }
+header { display: flex; align-items: center; justify-content: space-between; min-height: 3.35rem; gap: 1rem; border-bottom: 1px solid var(--line); font: .85rem/1.35 var(--mono) }
 header span { color: var(--gold) }
 a { color: var(--mint); text-underline-offset: .2em; overflow-wrap: anywhere }
 main { padding-bottom: 3rem }
-h1 { margin: 0 0 .7rem; font: 500 clamp(2.8rem, 7vw, 5.4rem)/.98 Georgia, serif; letter-spacing: -.05em }
-h2 { font-size: 1.45rem; line-height: 1.2 }
-h3, p { margin: 0 }
-.intro { padding: clamp(2rem, 5vw, 4.5rem) 0 2rem; max-width: 48rem }
-.intro p, .hint, .dependencies { color: var(--muted) }
-.deck { display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(15rem, 1fr); background: var(--paper); border: 1px solid var(--line); border-radius: .9rem; overflow: hidden }
-.console { padding: 1.1rem clamp(.8rem, 2vw, 1.7rem); min-width: 0 }
-.toolbar, .tools, .legend { display: flex; flex-wrap: wrap; align-items: center; gap: .55rem }
-.toolbar { justify-content: space-between }
-.control { display: grid; gap: .25rem }
-label, .meta { color: var(--muted) }
-button, select { font: inherit; font-size: .92rem; min-height: 44px; color: var(--ink); background: #1c2c28; border: 1px solid #52665f; border-radius: .4rem; padding: .45rem .65rem }
-button { cursor: pointer }
+h1, h2, h3, p { margin: 0 }
+.intro { padding-block: clamp(1.5rem, 4vw, 3.25rem) clamp(1.2rem, 2.4vw, 2.2rem); display: flex; align-items: flex-end; gap: 1rem 3rem; flex-wrap: wrap }
+h1 { font: 500 clamp(2.4rem, 5.7vw, 5rem)/.98 Georgia, serif; letter-spacing: -.055em }
+.intro p { max-width: 29rem; color: var(--muted); text-wrap: pretty }
+.deck { display: grid; grid-template-columns: minmax(0, 2.15fr) minmax(15rem, .85fr); background: var(--paper); border: 1px solid var(--line); border-radius: .9rem; overflow: hidden }
+.console { min-width: 0; padding: clamp(.7rem, 1.7vw, 1.5rem) }
+.toolbar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; max-width: 34rem }
+.control { display: grid; gap: .2rem }
+label, .legend, .source, .projected { font: .82rem/1.5 var(--mono) }
+label, .hint, .dependencies { color: var(--muted) }
+button, select, summary { cursor: pointer; font: inherit; font-size: .9rem; min-height: 44px }
+button, select { color: var(--ink); background: #20332b; border: 1px solid #52675c; border-radius: .4rem; padding: .45rem .65rem }
+select { min-width: 0; width: 100% }
 button:hover, select:hover { border-color: var(--mint) }
-:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px }
-#orbit { margin: .9rem 0 .5rem; background: radial-gradient(ellipse, #1d3029, #101c19 73%); border-radius: .5rem }
-#scene { width: 100%; display: block; touch-action: pan-y; cursor: grab }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px }
+#orbit { margin-top: 1rem; overflow: hidden; border: 1px solid var(--line); border-radius: .6rem; background: radial-gradient(ellipse at var(--light-x, 30%) var(--light-y, 60%), #284438 0%, #13291e 35%, #0a1812 85%) }
+#scene { display: block; width: 100%; height: clamp(18rem, 30vw, 25rem); touch-action: pan-y; cursor: grab }
 #scene:active { cursor: grabbing }
 .node { cursor: pointer }
-.node text { font: 600 17px var(--mono); fill: var(--ink); paint-order: stroke; stroke: #101c19; stroke-width: 4px; stroke-linejoin: round }
-.node:focus .ring { stroke-width: 4 }
+.node text { font: 600 15px var(--mono); fill: var(--ink); paint-order: stroke; stroke: #101d16; stroke-linejoin: round; stroke-width: 4px }
+.node[aria-pressed="true"] text { fill: var(--gold) }
+.node .focus-ring { opacity: 0; pointer-events: none }
 .node:focus-visible { outline: none }
-.legend { gap: .35rem 1rem; color: var(--muted) }
-.legend span::before { content: "●"; margin-right: .4rem; color: var(--gold) }
+.node:focus-visible .focus-ring { opacity: 1 }
+.viewbar, .tools, .legend { display: flex; flex-wrap: wrap; align-items: center }
+.viewbar { justify-content: space-between; gap: .3rem .9rem; padding-top: .45rem }
+.tools { gap: .15rem }
+.tools button { border-color: transparent; background: transparent }
+.tools button:hover, summary:hover { background: #253a2d }
+.legend { gap: .2rem .8rem; color: var(--muted) }
+.legend span::before { content: "●"; margin-right: .32rem; color: var(--gold) }
 .legend span:nth-child(2)::before { color: var(--mint) }
 .legend span:nth-child(3)::before { color: #b6a9ff }
-.hint { font-size: .85rem; margin-top: .45rem }
-.inspector { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; border-left: 1px solid var(--line); background: #14211d }
-.inspector h2 { font: 500 2.15rem/1.05 Georgia, serif; margin: 0 }
-.inspector .projected { color: var(--gold); font: .82rem var(--mono) }
-.inspector hr { margin: .25rem 0; width: 100%; border: 0; border-top: 1px solid var(--line) }
-#neighbors { display: flex; flex-flow: column; gap: .4rem; align-items: flex-start }
-#export { align-self: flex-start; margin-top: auto }
-.index { margin-top: 2.5rem }
-.index h2 { margin-bottom: .4rem }
+.help { color: var(--muted); font-size: .85rem }
+.help[open] { width: 100% }
+.help summary { display: list-item; width: fit-content; padding: .65rem .25rem; font-size: .85rem }
+.help p { max-width: 57ch; padding-bottom: .5rem }
+.inspector { --ink: #19261d; --muted: #4a584a; --mint: #28553d; --gold: #784714; color-scheme: light; color: var(--ink); background: #e8e6d5; border-left: 1px solid #899983; padding: clamp(1.15rem, 2.2vw, 2rem); display: flex; flex-direction: column; align-items: flex-start; gap: .8rem }
+.inspector h2 { font: 500 clamp(1.8rem, 2.6vw, 2.6rem)/1.05 Georgia, serif; letter-spacing: -.035em }
+.projected { color: var(--muted); display: flex; align-items: center; gap: .5rem }
+.projected::before { content:""; width: .62rem; height: .62rem; border-radius: 50%; background: var(--layer-color); border: 1px solid #394b3b }
+.source { color: var(--mint) }
+.inspector hr { width: 100%; border: 0; border-top: 1px solid #aab3a0; margin: .4rem 0 }
+.inspector strong { font-size: .85rem }
+#neighbors { align-self: stretch; display: flex; flex-direction: column; gap: 1px; font-size: .92rem }
+#neighbors button { color: var(--ink); border: 0; border-bottom: 1px solid #b6beae; border-radius: 0; background: transparent; text-align: left; display: flex; align-items: center; justify-content: space-between; padding-inline: 0 }
+#neighbors button::after { content: "→"; color: #476749 }
+#neighbors button:hover { background: #d7deca }
+#export { align-self: flex-start; margin-top: auto; color: #f3f6ed; background: #244632; border-color: #244632 }
+#export:hover { background: #345e44 }
+#notice { color: var(--mint); font-size: .88rem }
+#notice:empty { display: none }
+.index { margin-top: clamp(1.8rem, 4vw, 3.6rem) }
+.index h2 { font: 500 2rem/1.1 Georgia, serif; letter-spacing: -.035em }
+.index .hint { margin-top: .45rem; font-size: .9rem }
 .directory { padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: .1rem 1.6rem }
 .directory li { border-top: 1px solid var(--line); padding: 1rem 0 }
-.directory h3 { margin-bottom: .4rem; color: var(--gold); font: 1.2rem Georgia, serif }
+.directory li:target { border-color: var(--gold) }
+.directory h3 { margin-bottom: .4rem; color: var(--gold); font: 1.3rem Georgia, serif }
 .directory p { font-size: .92rem; margin: .35rem 0 }
-.source { color: var(--mint) }
-#notice { min-height: 1.55em; color: var(--mint) }
 @media (max-width: 780px) {
+  .intro { display: grid; gap: .55rem }
   .deck { grid-template-columns: minmax(0, 1fr) }
-  .inspector { border-left: 0; border-top: 1px solid var(--line) }
-  .node text { font-size: 20px }
+  .inspector { border-left: 0; border-top: 1px solid #899983 }
+  #neighbors { flex-direction: row; flex-wrap: wrap; gap: .75rem }
+  #neighbors button { gap: .5rem }
+  #export { margin-top: .5rem }
+}
+@media (max-width: 480px) {
+  main, header { padding-inline: .8rem }
+  .intro { padding-top: 1.3rem }
+  h1 { font-size: clamp(2rem, 8.8vw, 2.8rem) }
+  .intro p { font-size: .95rem }
+  .node text { font-size: 13px }
+  .legend { gap: .65rem }
+  .viewbar .legend { padding: .2rem 0 }
+  .legend, .help summary { font-size: .73rem }
+  select { padding-inline: .4rem; font-size: .85rem }
+  .help { margin-top: .1rem }
+  #orbit { margin-top: .7rem }
+  #scene { height: clamp(15.4rem, 65vw, 18.2rem) }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto } }
 </style>
 </head>
 <body>
-<header><span>EauDoon / Hermes Agent</span><a href="#directory">Module directory</a></header>
+<header><span>EauDoon / Hermes Agent</span><a href="#directory">Directory</a></header>
 <main>
   <section class="intro"><h1>Hermes operator map</h1>
-    <p>Follow a CLI request from its entry point to a profile, a log file, or a stored session. Each module links to the source in this fork.</p>
+    <p>Trace profile selection, log reads, and session lookups from the Hermes CLI to their source modules.</p>
   </section>
   <section id="explorer" class="deck" aria-label="Interactive module explorer" hidden>
     <div class="console">
       <div class="toolbar">
         <div class="control"><label for="route">Trace a route</label>
-          <select id="route"><option value="all">All connections</option><option value="profiles">Select a profile</option><option value="logs">Read a log</option><option value="sessions">Find a session</option></select>
+          <select id="route"><option value="all">All routes</option><option value="profiles">Select a profile</option><option value="logs">Read a log</option><option value="sessions">Find a session</option></select>
         </div>
         <div class="control"><label for="picker">Inspect a module</label><select id="picker"></select></div>
       </div>
       <div id="orbit" tabindex="0" role="group" aria-label="Rotate module map" aria-describedby="gesture">
         <svg id="scene" viewBox="0 0 680 360" aria-label="Directed module connections">
           <defs><pattern id="dots" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r=".8" fill="#41594d"/></pattern></defs>
-          <rect width="680" height="360" fill="url(#dots)"/>
+          <rect width="100%" height="100%" fill="url(#dots)"/>
           <g id="wires" aria-hidden="true"></g><g id="points"></g>
         </svg>
       </div>
-      <div class="tools"><button id="left" type="button" aria-label="Rotate left">↶ Left</button><button id="right" type="button" aria-label="Rotate right">Right ↷</button><button id="reset" type="button">Reset view</button></div>
-      <p id="gesture" class="hint">Drag sideways to rotate. Focus the map and use the arrow keys to turn or tilt. Home restores the original view.</p>
-      <div class="legend"><span>Entry point</span><span>Command</span><span>Storage</span></div>
+      <div class="viewbar">
+        <div class="legend"><span>Entry point</span><span>Command</span><span>Storage</span></div>
+        <details class="help"><summary>Map controls</summary>
+          <div class="tools"><button id="left" type="button" aria-label="Rotate left">↶ Left</button><button id="right" type="button" aria-label="Rotate right">Right ↷</button><button id="reset" type="button">Reset view</button></div>
+          <p id="gesture">Drag sideways to rotate. With the map focused, use the arrow keys to turn or tilt, and Home to reset. Select a point to inspect its dependencies.</p>
+        </details>
+      </div>
     </div>
     <aside class="inspector" aria-label="Selected module">
-      <div id="layer" class="projected"></div><h2 id="title"></h2><p id="description"></p>
+      <div id="layer" class="projected"></div><h2 id="title" tabindex="-1"></h2><p id="description"></p>
       <a id="source" class="source"></a><hr>
       <strong>Uses</strong><div id="neighbors"></div>
       <button id="export" type="button">Download route JSON</button><div id="notice" role="status"></div>
@@ -140,13 +179,13 @@ button:hover, select:hover { border-color: var(--mint) }
         <a class="source" href="https://github.com/EauDoon/hermes-agent/blob/271ef2c69f618704fb5a6a6994275111557dcd67/hermes_logging.py">hermes_logging.py</a>
         <p class="dependencies">Uses <a href="#paths">Profile paths</a></p>
       </li>
-      <li id="sessions" data-layer="Command" data-point="7 -5 65">
+      <li id="sessions" data-layer="Command" data-point="51 27 65">
         <h3>Sessions</h3>
         <p>Lists stored conversations and resolves the workspace scope before querying session records.</p>
         <a class="source" href="https://github.com/EauDoon/hermes-agent/blob/271ef2c69f618704fb5a6a6994275111557dcd67/hermes_cli/sessions_cmd.py">hermes_cli/sessions_cmd.py</a>
         <p class="dependencies">Uses <a href="#database">Session DB</a></p>
       </li>
-      <li id="database" data-layer="Storage" data-point="215 -3 -15">
+      <li id="database" data-layer="Storage" data-point="215 -12 -15">
         <h3>Session DB</h3>
         <p>Provides the SQLite session store. Its default database location follows the active Hermes home.</p>
         <a class="source" href="https://github.com/EauDoon/hermes-agent/blob/271ef2c69f618704fb5a6a6994275111557dcd67/hermes_state.py">hermes_state.py</a>
@@ -208,9 +247,10 @@ for (const node of records) {
     wires.push({ from: node.id, to: target, group, line, arrow });
   }
   const group = element("g", { class: "node", role: "button", tabindex: "0", "aria-label": node.name }, byId("points"));
-  element("circle", { r: 16, fill: "transparent" }, group);
+  element("circle", { r: 22, fill: "transparent" }, group);
   const ring = element("circle", { class: "ring", r: 12, fill: "#162620", stroke: colors[node.layer] }, group);
   element("circle", { r: 5, fill: colors[node.layer] }, group);
+  element("circle", { class: "focus-ring", r: 17, fill: "none", stroke: "#ffffff", "stroke-width": 2, "stroke-dasharray": "3 2" }, group);
   const label = element("text", { y: -21, "text-anchor": "middle" }, group);
   label.textContent = node.name;
   group.addEventListener("click", () => { if (!dragged) select(node.id); });
@@ -220,43 +260,79 @@ for (const node of records) {
       select(node.id);
     }
   });
-  points.set(node.id, { group, ring });
+  points.set(node.id, { group, ring, label });
 }
 
-function project([x, y, z]) {
+function project([x, y, z], width, height) {
   const side = x * Math.cos(yaw) + z * Math.sin(yaw);
   const depth = z * Math.cos(yaw) - x * Math.sin(yaw);
   const vertical = y * Math.cos(pitch) - depth * Math.sin(pitch);
   const distance = y * Math.sin(pitch) + depth * Math.cos(pitch);
   const scale = 700 / (700 - distance);
-  return { x: 340 + side * scale, y: 180 + vertical * scale, scale };
+  return {
+    x: Math.max(24, Math.min(width - 24, width / 2 + side * scale * (width - 52) / 485)),
+    y: Math.max(25, Math.min(height - 25, height / 2 + vertical * scale * (height - 80) / 265)),
+    scale,
+  };
 }
 
 function draw() {
-  const coords = new Map(records.map(n => [n.id, project(n.point)]));
+  const width = scene.clientWidth;
+  const height = scene.clientHeight;
+  if (!width || !height) return;
+  scene.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  const coords = new Map(records.map(n => [n.id, project(n.point, width, height)]));
   for (const { from, to, group, line, arrow } of wires) {
     const a = coords.get(from);
     const b = coords.get(to);
     const length = Math.hypot(b.x - a.x, b.y - a.y) || 1;
     const dx = (b.x - a.x) / length;
     const dy = (b.y - a.y) / length;
-    const tipX = b.x - 16 * dx;
-    const tipY = b.y - 16 * dy;
+    const tipX = b.x - 14 * dx;
+    const tipY = b.y - 14 * dy;
     line.setAttribute("x1", a.x); line.setAttribute("y1", a.y);
     line.setAttribute("x2", tipX); line.setAttribute("y2", tipY);
-    const backX = tipX - 9 * dx;
-    const backY = tipY - 9 * dy;
+    const backX = tipX - 10 * dx;
+    const backY = tipY - 10 * dy;
     arrow.setAttribute("points", [[tipX, tipY], [backX - dy * 4, backY + dx * 4], [backX + dy * 4, backY - dx * 4]].map(p => p.join(",")).join(" "));
-    const color = from === selected ? "#ffd17e" : "#7da194";
+    arrow.style.display = length > 32 ? "" : "none";
+    const outgoing = from === selected;
+    const color = outgoing ? "#ffd17e" : "#91aa96";
+    line.setAttribute("stroke-width", outgoing ? 2.8 : 1.4);
     line.setAttribute("stroke", color); arrow.setAttribute("fill", color);
     group.style.display = active.has(from) && active.has(to) ? "" : "none";
   }
-  for (const [id, { group, ring }] of points) {
-    const { x, y, scale } = coords.get(id);
-    group.setAttribute("transform", "translate(" + x + " " + y + ") scale(" + Math.max(.82, Math.min(1.12, scale)) + ")");
+  const placed = [];
+  for (const [id, { group, ring, label }] of points) {
     group.style.display = active.has(id) ? "" : "none";
+    if (!active.has(id)) continue;
+    const { x, y, scale } = coords.get(id);
+    group.setAttribute("transform", `translate(${x} ${y})`);
     group.setAttribute("aria-pressed", String(id === selected));
-    ring.setAttribute("stroke-width", id === selected ? 4 : 1);
+    ring.setAttribute("r", Math.max(8, Math.min(13, 10 * scale)));
+    ring.setAttribute("stroke-width", id === selected ? 3 : 1.3);
+    // Keep labels legible at their screen size. Try the opposite side of a
+    // point if its label would collide with one already placed or exit the plot.
+    const size = label.getComputedTextLength();
+    const left = Math.max(5, Math.min(width - size - 5, x - size / 2));
+    const above = y - 16;
+    const below = y + 27;
+    const options = [above, below, above - 17, below + 17];
+    const baseline = options.find(base => base > 15 && base < height - 3 &&
+      placed.every(other => left + size < other.left - 2 || left > other.right + 2 ||
+        Math.abs(base - other.base) >= 17) &&
+      [...active].every(key => {
+        const p = coords.get(key);
+        return key === id || p.x < left - 10 || p.x > left + size + 10 ||
+          p.y < base - 23 || p.y > base + 12;
+      })) ?? Math.max(16, Math.min(height - 4, above));
+    placed.push({ left, right: left + size, base: baseline });
+    label.setAttribute("x", left + size / 2 - x);
+    label.setAttribute("y", baseline - y);
+    if (id === selected) {
+      orbit.style.setProperty("--light-x", (100 * x / width) + "%");
+      orbit.style.setProperty("--light-y", (100 * y / height) + "%");
+    }
   }
 }
 
@@ -265,6 +341,7 @@ function select(id, save = true) {
   const node = modules.get(id);
   picker.value = id;
   byId("layer").textContent = node.layer;
+  byId("layer").style.setProperty("--layer-color", colors[node.layer]);
   byId("title").textContent = node.name;
   byId("description").textContent = node.summary;
   byId("source").href = node.source;
@@ -275,7 +352,7 @@ function select(id, save = true) {
     const button = document.createElement("button");
     button.type = "button";
     button.textContent = modules.get(target).name;
-    button.addEventListener("click", () => { select(target); picker.focus(); });
+    button.addEventListener("click", () => { select(target); byId("title").focus(); });
     neighbors.append(button);
   }
   if (!neighbors.childElementCount) neighbors.textContent = "No outgoing connections in this view.";
@@ -358,8 +435,9 @@ byId("export").addEventListener("click", () => {
   byId("notice").textContent = "Exported " + nodes.length + " modules.";
 });
 
-readLocation();
 byId("explorer").hidden = false;
+readLocation();
+new ResizeObserver(draw).observe(scene);
 </script>
 </body>
 </html>
