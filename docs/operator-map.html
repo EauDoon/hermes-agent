@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Hermes operator map · EauDoon</title>
+<style>
+:root {
+  color-scheme: dark;
+  --ink: #f2f4ed;
+  --muted: #b1c3b9;
+  --line: #354941;
+  --gold: #ffd17e;
+  --mint: #81e3bb;
+  --paper: #101e19;
+  --mono: ui-monospace, Consolas, monospace;
+  font: 16px/1.5 system-ui, sans-serif;
+}
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+body { margin: 0; background: #09140f; color: var(--ink) }
+main, header { max-width: 85rem; margin: auto; padding-inline: clamp(1rem, 4vw, 4rem) }
+header { display: flex; align-items: center; justify-content: space-between; min-height: 3.35rem; gap: 1rem; border-bottom: 1px solid var(--line); font: .85rem/1.35 var(--mono) }
+header span { color: var(--gold) }
+a { color: var(--mint); text-underline-offset: .2em; overflow-wrap: anywhere }
+main { padding-bottom: 3rem }
+h1, h2, h3, p { margin: 0 }
+.intro { padding-block: clamp(1.5rem, 4vw, 3.25rem) clamp(1.2rem, 2.4vw, 2.2rem); display: flex; align-items: flex-end; gap: 1rem 3rem; flex-wrap: wrap }
+h1 { font: 500 clamp(2.4rem, 5.7vw, 5rem)/.98 Georgia, serif; letter-spacing: -.055em }
+.intro p { max-width: 29rem; color: var(--muted); text-wrap: pretty }
+.deck { display: grid; grid-template-columns: minmax(0, 2.15fr) minmax(15rem, .85fr); background: var(--paper); border: 1px solid var(--line); border-radius: .9rem; overflow: hidden }
+.console { min-width: 0; padding: clamp(.7rem, 1.7vw, 1.5rem) }
+.toolbar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; max-width: 34rem }
+.control { display: grid; gap: .2rem }
+label, .legend, .source, .projected { font: .82rem/1.5 var(--mono) }
+label, .hint, .dependencies { color: var(--muted) }
+button, select, summary { cursor: pointer; font: inherit; font-size: .9rem; min-height: 44px }
+button, select { color: var(--ink); background: #20332b; border: 1px solid #52675c; border-radius: .4rem; padding: .45rem .65rem }
+select { min-width: 0; width: 100% }
+button:hover, select:hover { border-color: var(--mint) }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px }
+#orbit { margin-top: 1rem; overflow: hidden; border: 1px solid var(--line); border-radius: .6rem; background: radial-gradient(ellipse at var(--light-x, 30%) var(--light-y, 60%), #284438 0%, #13291e 35%, #0a1812 85%) }
+#scene { display: block; width: 100%; height: clamp(18rem, 30vw, 25rem); touch-action: pan-y; cursor: grab }
+#scene:active { cursor: grabbing }
+.node { cursor: pointer }
+.node text { font: 600 15px var(--mono); fill: var(--ink); paint-order: stroke; stroke: #101d16; stroke-linejoin: round; stroke-width: 4px }
+.node[aria-pressed="true"] text { fill: var(--gold) }
+.node .focus-ring { opacity: 0; pointer-events: none }
+.node:focus-visible { outline: none }
+.node:focus-visible .focus-ring { opacity: 1 }
+.viewbar, .tools, .legend { display: flex; flex-wrap: wrap; align-items: center }
+.viewbar { justify-content: space-between; gap: .3rem .9rem; padding-top: .45rem }
+.tools { gap: .15rem }
+.tools button { border-color: transparent; background: transparent }
+.tools button:hover, summary:hover { background: #253a2d }
+.legend { gap: .2rem .8rem; color: var(--muted) }
+.legend span::before { content: "●"; margin-right: .32rem; color: var(--gold) }
+.legend span:nth-child(2)::before { color: var(--mint) }
+.legend span:nth-child(3)::before { color: #b6a9ff }
+.help { color: var(--muted); font-size: .85rem }
+.help[open] { width: 100% }
+.help summary { display: list-item; width: fit-content; padding: .65rem .25rem; font-size: .85rem }
+.help p { max-width: 57ch; padding-bottom: .5rem }
+.inspector { --ink: #19261d; --muted: #4a584a; --mint: #28553d; --gold: #784714; color-scheme: light; color: var(--ink); background: #e8e6d5; border-left: 1px solid #899983; padding: clamp(1.15rem, 2.2vw, 2rem); display: flex; flex-direction: column; align-items: flex-start; gap: .8rem }
+.inspector h2 { font: 500 clamp(1.8rem, 2.6vw, 2.6rem)/1.05 Georgia, serif; letter-spacing: -.035em }
+.projected { color: var(--muted); display: flex; align-items: center; gap: .5rem }
+.projected::before { content:""; width: .62rem; height: .62rem; border-radius: 50%; background: var(--layer-color); border: 1px solid #394b3b }
+.source { color: var(--mint) }
+.inspector hr { width: 100%; border: 0; border-top: 1px solid #aab3a0; margin: .4rem 0 }
+.inspector strong { font-size: .85rem }
+#neighbors { align-self: stretch; display: flex; flex-direction: column; gap: 1px; font-size: .92rem }
+#neighbors button { color: var(--ink); border: 0; border-bottom: 1px solid #b6beae; border-radius: 0; background: transparent; text-align: left; display: flex; align-items: center; justify-content: space-between; padding-inline: 0 }
+#neighbors button::after { content: "→"; color: #476749 }
+#neighbors button:hover { background: #d7deca }
+#export { align-self: flex-start; margin-top: auto; color: #f3f6ed; background: #244632; border-color: #244632 }
+#export:hover { background: #345e44 }
+#notice { color: var(--mint); font-size: .88rem }
+#notice:empty { display: none }
+.index { margin-top: clamp(1.8rem, 4vw, 3.6rem) }
+.index h2 { font: 500 2rem/1.1 Georgia, serif; letter-spacing: -.035em }
+.index .hint { margin-top: .45rem; font-size: .9rem }
+.directory { padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: .1rem 1.6rem }
+.directory li { border-top: 1px solid var(--line); padding: 1rem 0 }
+.directory li:target { border-color: var(--gold) }
+.directory h3 { margin-bottom: .4rem; color: var(--gold); font: 1.3rem Georgia, serif }
+.directory p { font-size: .92rem; margin: .35rem 0 }
+@media (max-width: 780px) {
+  .intro { display: grid; gap: .55rem }
+  .deck { grid-template-columns: minmax(0, 1fr) }
+  .inspector { border-left: 0; border-top: 1px solid #899983 }
+  #neighbors { flex-direction: row; flex-wrap: wrap; gap: .75rem }
+  #neighbors button { gap: .5rem }
+  #export { margin-top: .5rem }
+}
+@media (max-width: 480px) {
+  main, header { padding-inline: .8rem }
+  .intro { padding-top: 1.3rem }
+  h1 { font-size: clamp(2rem, 8.8vw, 2.8rem) }
+  .intro p { font-size: .95rem }
+  .node text { font-size: 13px }
+  .legend { gap: .65rem }
+  .viewbar .legend { padding: .2rem 0 }
+  .legend, .help summary { font-size: .73rem }
+  select { padding-inline: .4rem; font-size: .85rem }
+  .help { margin-top: .1rem }
+  #orbit { margin-top: .7rem }
+  #scene { height: clamp(15.4rem, 65vw, 18.2rem) }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto } }
+</style>
+</head>
+<body>
+<header><span>EauDoon / Hermes Agent</span><a href="#directory">Directory</a></header>
+<main>
+  <section class="intro"><h1>Hermes operator map</h1>
+    <p>Trace profile selection, log reads, and session lookups from the Hermes CLI to their source modules.</p>
+  </section>
+  <section id="explorer" class="deck" aria-label="Interactive module explorer" hidden>
+    <div class="console">
+      <div class="toolbar">
+        <div class="control"><label for="route">Trace a route</label>
+          <select id="route"><option value="all">All routes</option><option value="profiles">Select a profile</option><option value="logs">Read a log</option><option value="sessions">Find a session</option></select>
+        </div>
+        <div class="control"><label for="picker">Inspect a module</label><select id="picker"></select></div>
+      </div>
+      <div id="orbit" tabindex="0" role="group" aria-label="Rotate module map" aria-describedby="gesture">
+        <svg id="scene" viewBox="0 0 680 360" aria-label="Directed module connections">
+          <defs><pattern id="dots" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r=".8" fill="#41594d"/></pattern></defs>
+          <rect width="100%" height="100%" fill="url(#dots)"/>
+          <g id="wires" aria-hidden="true"></g><g id="points"></g>
+        </svg>
+      </div>
+      <div class="viewbar">
+        <div class="legend"><span>Entry point</span><span>Command</span><span>Storage</span></div>
+        <details class="help"><summary>Map controls</summary>
+          <div class="tools"><button id="left" type="button" aria-label="Rotate left">↶ Left</button><button id="right" type="button" aria-label="Rotate right">Right ↷</button><button id="reset" type="button">Reset view</button></div>
+          <p id="gesture">Drag sideways to rotate. With the map focused, use the arrow keys to turn or tilt, and Home to reset. Select a point to inspect its dependencies.</p>
+        </details>
+      </div>
+    </div>
+    <aside class="inspector" aria-label="Selected module">
+      <div id="layer" class="projected"></div><h2 id="title" tabindex="-1"></h2><p id="description"></p>
+      <a id="source" class="source"></a><hr>
+      <strong>Uses</strong><div id="neighbors"></div>
+      <button id="export" type="button">Download route JSON</button><div id="notice" role="status"></div>
+    </aside>
+  </section>
+  <section class="index" id="directory"><h2>Module directory</h2>
+    <p class="hint">Each “Uses” link points from a caller to a dependency. The directory covers the three operator routes above.</p>
+    <ul class="directory">
+      <li id="cli" data-layer="Entry point" data-point="-235 0 5">
+        <h3>CLI dispatcher</h3>
+        <p>Routes the selected command after applying any profile override. Start here to follow a CLI request.</p>
+        <a class="source" href="https://github.com/EauDoon/hermes-agent/blob/271ef2c69f618704fb5a6a6994275111557dcd67/hermes_cli/main.py">hermes_cli/main.py</a>
+        <p class="dependencies">Uses <a href="#profiles">Profiles</a>, <a href="#logs">Log reader</a>, <a href="#sessions">Sessions</a></p>
+      </li>
+      <li id="profiles" data-layer="Command" data-point="-93 -109 88">
+        <h3>Profiles</h3>
+        <p>Resolves a named profile and its data directory. The default profile and named profiles have distinct storage roots.</p>
+        <a class="source" href="https://github.com/EauDoon/hermes-agent/blob/271ef2c69f618704fb5a6a6994275111557dcd67/hermes_cli/profiles.py">hermes_cli/profiles.py</a>
+        <p class="dependencies">Uses <a href="#paths">Profile paths</a></p>
+      </li>
+      <li id="paths" data-layer="Storage" data-point="75 -117 -35">
+        <h3>Profile paths</h3>
+        <p>Resolves the active Hermes home used by log and session readers. Inspect this module when two profiles show different histories.</p>
+        <a class="source" href="https://github.com/EauDoon/hermes-agent/blob/271ef2c69f618704fb5a6a6994275111557dcd67/hermes_constants.py">hermes_constants.py</a>
+        <p class="dependencies">No outgoing connections in this map.</p>
+      </li>
+      <li id="logs" data-layer="Command" data-point="-75 103 -44">
+        <h3>Log reader</h3>
+        <p>Lists logs for the active profile and tails entries by session, component, time, or severity. Component names resolve through the logger groups.</p>
+        <a class="source" href="https://github.com/EauDoon/hermes-agent/blob/271ef2c69f618704fb5a6a6994275111557dcd67/hermes_cli/logs.py">hermes_cli/logs.py</a>
+        <p class="dependencies">Uses <a href="#paths">Profile paths</a>, <a href="#rules">Logger groups</a></p>
+      </li>
+      <li id="rules" data-layer="Storage" data-point="114 113 70">
+        <h3>Logger groups</h3>
+        <p>Defines the logger prefixes used for component filtering. Gateway messages can come from adapter namespaces as well as the gateway itself.</p>
+        <a class="source" href="https://github.com/EauDoon/hermes-agent/blob/271ef2c69f618704fb5a6a6994275111557dcd67/hermes_logging.py">hermes_logging.py</a>
+        <p class="dependencies">Uses <a href="#paths">Profile paths</a></p>
+      </li>
+      <li id="sessions" data-layer="Command" data-point="51 27 65">
+        <h3>Sessions</h3>
+        <p>Lists stored conversations and resolves the workspace scope before querying session records.</p>
+        <a class="source" href="https://github.com/EauDoon/hermes-agent/blob/271ef2c69f618704fb5a6a6994275111557dcd67/hermes_cli/sessions_cmd.py">hermes_cli/sessions_cmd.py</a>
+        <p class="dependencies">Uses <a href="#database">Session DB</a></p>
+      </li>
+      <li id="database" data-layer="Storage" data-point="215 -12 -15">
+        <h3>Session DB</h3>
+        <p>Provides the SQLite session store. Its default database location follows the active Hermes home.</p>
+        <a class="source" href="https://github.com/EauDoon/hermes-agent/blob/271ef2c69f618704fb5a6a6994275111557dcd67/hermes_state.py">hermes_state.py</a>
+        <p class="dependencies">Uses <a href="#paths">Profile paths</a></p>
+      </li>
+    </ul>
+  </section>
+</main>
+<script>
+"use strict";
+const byId = id => document.getElementById(id);
+const records = Array.from(document.querySelectorAll(".directory li"), row => ({
+  id: row.id,
+  name: row.querySelector("h3").textContent,
+  layer: row.dataset.layer,
+  summary: row.querySelector("p").textContent,
+  source: row.querySelector(".source").href,
+  path: row.querySelector(".source").textContent,
+  point: row.dataset.point.split(" ").map(Number),
+  uses: Array.from(row.querySelectorAll(".dependencies a"), a => a.hash.slice(1))
+}));
+const modules = new Map(records.map(node => [node.id, node]));
+const colors = { "Entry point": "#ffd17e", Command: "#81e3bb", Storage: "#b6a9ff" };
+const route = byId("route");
+const picker = byId("picker");
+const scene = byId("scene");
+const orbit = byId("orbit");
+let selected = "cli";
+let yaw = 0;
+let pitch = 0;
+let active = new Set();
+
+function slice() {
+  if (route.value === "all") return new Set(modules.keys());
+  const found = new Set(["cli"]);
+  function visit(id) {
+    if (found.has(id)) return;
+    found.add(id);
+    modules.get(id).uses.forEach(visit);
+  }
+  visit(route.value);
+  return found;
+}
+
+function element(name, attributes, parent) {
+  const el = document.createElementNS("http://www.w3.org/2000/svg", name);
+  for (const [key, value] of Object.entries(attributes)) el.setAttribute(key, value);
+  parent.append(el);
+  return el;
+}
+
+const wires = [];
+const points = new Map();
+for (const node of records) {
+  for (const target of node.uses) {
+    const group = element("g", {}, byId("wires"));
+    const line = element("line", { "stroke-width": 1.8 }, group);
+    const arrow = element("polygon", {}, group);
+    wires.push({ from: node.id, to: target, group, line, arrow });
+  }
+  const group = element("g", { class: "node", role: "button", tabindex: "0", "aria-label": node.name }, byId("points"));
+  element("circle", { r: 22, fill: "transparent" }, group);
+  const ring = element("circle", { class: "ring", r: 12, fill: "#162620", stroke: colors[node.layer] }, group);
+  element("circle", { r: 5, fill: colors[node.layer] }, group);
+  element("circle", { class: "focus-ring", r: 17, fill: "none", stroke: "#ffffff", "stroke-width": 2, "stroke-dasharray": "3 2" }, group);
+  const label = element("text", { y: -21, "text-anchor": "middle" }, group);
+  label.textContent = node.name;
+  group.addEventListener("click", () => { if (!dragged) select(node.id); });
+  group.addEventListener("keydown", event => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      select(node.id);
+    }
+  });
+  points.set(node.id, { group, ring, label });
+}
+
+function project([x, y, z], width, height) {
+  const side = x * Math.cos(yaw) + z * Math.sin(yaw);
+  const depth = z * Math.cos(yaw) - x * Math.sin(yaw);
+  const vertical = y * Math.cos(pitch) - depth * Math.sin(pitch);
+  const distance = y * Math.sin(pitch) + depth * Math.cos(pitch);
+  const scale = 700 / (700 - distance);
+  return {
+    x: Math.max(24, Math.min(width - 24, width / 2 + side * scale * (width - 52) / 485)),
+    y: Math.max(25, Math.min(height - 25, height / 2 + vertical * scale * (height - 80) / 265)),
+    scale,
+  };
+}
+
+function draw() {
+  const width = scene.clientWidth;
+  const height = scene.clientHeight;
+  if (!width || !height) return;
+  scene.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  const coords = new Map(records.map(n => [n.id, project(n.point, width, height)]));
+  for (const { from, to, group, line, arrow } of wires) {
+    const a = coords.get(from);
+    const b = coords.get(to);
+    const length = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+    const dx = (b.x - a.x) / length;
+    const dy = (b.y - a.y) / length;
+    const tipX = b.x - 14 * dx;
+    const tipY = b.y - 14 * dy;
+    line.setAttribute("x1", a.x); line.setAttribute("y1", a.y);
+    line.setAttribute("x2", tipX); line.setAttribute("y2", tipY);
+    const backX = tipX - 10 * dx;
+    const backY = tipY - 10 * dy;
+    arrow.setAttribute("points", [[tipX, tipY], [backX - dy * 4, backY + dx * 4], [backX + dy * 4, backY - dx * 4]].map(p => p.join(",")).join(" "));
+    arrow.style.display = length > 32 ? "" : "none";
+    const outgoing = from === selected;
+    const color = outgoing ? "#ffd17e" : "#91aa96";
+    line.setAttribute("stroke-width", outgoing ? 2.8 : 1.4);
+    line.setAttribute("stroke", color); arrow.setAttribute("fill", color);
+    group.style.display = active.has(from) && active.has(to) ? "" : "none";
+  }
+  const placed = [];
+  for (const [id, { group, ring, label }] of points) {
+    group.style.display = active.has(id) ? "" : "none";
+    if (!active.has(id)) continue;
+    const { x, y, scale } = coords.get(id);
+    group.setAttribute("transform", `translate(${x} ${y})`);
+    group.setAttribute("aria-pressed", String(id === selected));
+    ring.setAttribute("r", Math.max(8, Math.min(13, 10 * scale)));
+    ring.setAttribute("stroke-width", id === selected ? 3 : 1.3);
+    // Keep labels legible at their screen size. Try the opposite side of a
+    // point if its label would collide with one already placed or exit the plot.
+    const size = label.getComputedTextLength();
+    const left = Math.max(5, Math.min(width - size - 5, x - size / 2));
+    const above = y - 16;
+    const below = y + 27;
+    const options = [above, below, above - 17, below + 17];
+    const baseline = options.find(base => base > 15 && base < height - 3 &&
+      placed.every(other => left + size < other.left - 2 || left > other.right + 2 ||
+        Math.abs(base - other.base) >= 17) &&
+      [...active].every(key => {
+        const p = coords.get(key);
+        return key === id || p.x < left - 10 || p.x > left + size + 10 ||
+          p.y < base - 23 || p.y > base + 12;
+      })) ?? Math.max(16, Math.min(height - 4, above));
+    placed.push({ left, right: left + size, base: baseline });
+    label.setAttribute("x", left + size / 2 - x);
+    label.setAttribute("y", baseline - y);
+    if (id === selected) {
+      orbit.style.setProperty("--light-x", (100 * x / width) + "%");
+      orbit.style.setProperty("--light-y", (100 * y / height) + "%");
+    }
+  }
+}
+
+function select(id, save = true) {
+  selected = id;
+  const node = modules.get(id);
+  picker.value = id;
+  byId("layer").textContent = node.layer;
+  byId("layer").style.setProperty("--layer-color", colors[node.layer]);
+  byId("title").textContent = node.name;
+  byId("description").textContent = node.summary;
+  byId("source").href = node.source;
+  byId("source").textContent = node.path;
+  const neighbors = byId("neighbors");
+  neighbors.replaceChildren();
+  for (const target of node.uses.filter(dep => active.has(dep))) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = modules.get(target).name;
+    button.addEventListener("click", () => { select(target); byId("title").focus(); });
+    neighbors.append(button);
+  }
+  if (!neighbors.childElementCount) neighbors.textContent = "No outgoing connections in this view.";
+  byId("notice").textContent = "";
+  if (save) {
+    const hash = new URLSearchParams({ route: route.value, module: id });
+    history.replaceState(null, "", "#" + hash.toString());
+  }
+  draw();
+}
+
+function setRoute(id, save = true) {
+  active = slice();
+  picker.replaceChildren();
+  records.filter(node => active.has(node.id)).forEach(node => picker.add(new Option(node.name, node.id)));
+  select(active.has(id) ? id : route.value === "all" ? "cli" : route.value, save);
+}
+
+function readLocation() {
+  const state = new URLSearchParams(location.hash.slice(1));
+  const requested = state.get("route");
+  route.value = ["all", "profiles", "logs", "sessions"].includes(requested) ? requested : "all";
+  setRoute(state.get("module"), false);
+}
+
+route.addEventListener("change", () => setRoute(route.value));
+picker.addEventListener("change", () => select(picker.value));
+window.addEventListener("hashchange", () => {
+  if (location.hash.startsWith("#route=")) readLocation();
+});
+
+function turn(horizontal, vertical) {
+  yaw += horizontal;
+  pitch = Math.max(-.65, Math.min(.65, pitch + vertical));
+  draw();
+}
+function reset() { yaw = 0; pitch = 0; draw(); }
+
+byId("left").addEventListener("click", () => turn(-.22, 0));
+byId("right").addEventListener("click", () => turn(.22, 0));
+byId("reset").addEventListener("click", reset);
+orbit.addEventListener("keydown", event => {
+  const steps = { ArrowLeft: [-.15, 0], ArrowRight: [.15, 0], ArrowUp: [0, -.12], ArrowDown: [0, .12] };
+  if (event.key === "Home") { event.preventDefault(); reset(); }
+  if (steps[event.key]) { event.preventDefault(); turn(...steps[event.key]); }
+});
+let drag = null;
+let dragged = false;
+scene.addEventListener("pointerdown", event => {
+  if (!event.isPrimary || event.button !== 0) return;
+  drag = { x: event.clientX, y: event.clientY, id: event.pointerId };
+  dragged = false;
+});
+scene.addEventListener("pointermove", event => {
+  if (!drag || drag.id !== event.pointerId) return;
+  const dx = event.clientX - drag.x;
+  const dy = event.clientY - drag.y;
+  if (!dragged && Math.hypot(dx, dy) < 5) return;
+  dragged = true;
+  scene.setPointerCapture(event.pointerId);
+  turn(dx * .009, dy * .004);
+  drag.x = event.clientX;
+  drag.y = event.clientY;
+});
+function endDrag() { drag = null; }
+scene.addEventListener("pointerup", endDrag);
+scene.addEventListener("pointercancel", endDrag);
+scene.addEventListener("pointerleave", () => { if (!dragged) endDrag(); });
+
+byId("export").addEventListener("click", () => {
+  const nodes = records.filter(node => active.has(node.id)).map(({ id, name, layer, summary, source, uses }) =>
+    ({ id, name, layer, summary, source, uses: uses.filter(dep => active.has(dep)) }));
+  const data = { data: { repository: { nameWithOwner: "EauDoon/hermes-agent", route: route.value, modules: { nodes } } } };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "hermes-operator-" + route.value + ".json";
+  anchor.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  byId("notice").textContent = "Exported " + nodes.length + " modules.";
+});
+
+byId("explorer").hidden = false;
+readLocation();
+new ResizeObserver(draw).observe(scene);
+</script>
+</body>
+</html>
