@@ -20,6 +20,7 @@ Usage examples::
 """
 
 import re
+import stat
 import sys
 import time
 from datetime import datetime, timedelta
@@ -171,6 +172,10 @@ def tail_log(
     component
         Component name to filter by (e.g. ``"gateway"``, ``"tools"``).
     """
+    if num_lines < 0:
+        print("Invalid --lines: use zero or a positive number.")
+        sys.exit(1)
+
     filename = LOG_FILES.get(log_name)
     if filename is None:
         print(f"Unknown log: {log_name!r}. Available: {', '.join(sorted(LOG_FILES))}")
@@ -267,6 +272,9 @@ def _read_tail(
 
     When filters are active, we read more raw lines to find enough matches.
     """
+    if num_lines == 0:
+        return []
+
     if has_filters:
         # Read more lines to ensure we get enough after filtering.
         # For large files, read last 10K lines and filter down.
@@ -372,9 +380,15 @@ def list_logs() -> None:
     print(f"Log files in {display_hermes_home()}/logs/:\n")
     found = False
     for entry in sorted(log_dir.iterdir()):
-        if entry.is_file() and entry.suffix == ".log":
-            size = entry.stat().st_size
-            mtime = datetime.fromtimestamp(entry.stat().st_mtime)
+        if not re.fullmatch(r".+\.log(?:\.[1-9][0-9]*)?", entry.name):
+            continue
+        try:
+            info = entry.stat()
+        except FileNotFoundError:
+            continue  # A writer may rotate the file during enumeration.
+        if stat.S_ISREG(info.st_mode):
+            size = info.st_size
+            mtime = datetime.fromtimestamp(info.st_mtime)
             if size < 1024:
                 size_str = f"{size}B"
             elif size < 1024 * 1024:

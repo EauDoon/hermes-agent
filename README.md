@@ -162,7 +162,15 @@ For the full command lists, see the [CLI guide](https://hermes-agent.nousresearc
 
 ## Documentation
 
-All documentation lives at **[hermes-agent.nousresearch.com/docs](https://hermes-agent.nousresearch.com/docs/)**:
+### Operator map for this fork
+
+Download the [Hermes operator map](https://github.com/EauDoon/hermes-agent/raw/refs/heads/main/docs/operator-map.html) and open the HTML file in your browser. In a checkout, open [docs/operator-map.html](docs/operator-map.html) directly. Trace a profile, find the code that reads a log, or follow a session listing into SQLite. The map includes a linked directory for offline reading and exports the selected route as JSON.
+
+The log reader on this fork accepts `hermes logs -n 0 -f` to follow new entries without printing history. Run `hermes logs list` to see active logs and numbered rotations for the selected profile.
+
+### Project documentation
+
+The full documentation lives at **[hermes-agent.nousresearch.com/docs](https://hermes-agent.nousresearch.com/docs/)**:
 
 | Section                                                                                             | What's Covered                                             |
 | --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |

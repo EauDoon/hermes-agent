@@ -23,7 +23,7 @@ def build_logs_parser(subparsers, *, cmd_logs: Callable) -> None:
         epilog="""\
 Examples:
     hermes logs                    Show last 50 lines of agent.log
-    hermes logs -f                 Follow agent.log in real time
+    hermes logs -n 0 -f            Follow only new agent.log entries
     hermes logs errors             Show last 50 lines of errors.log
     hermes logs gateway -n 100     Show last 100 lines of gateway.log
     hermes logs gui -f             Follow gui.log in real time
@@ -40,14 +40,14 @@ Examples:
         "log_name",
         nargs="?",
         default="agent",
-        help="Log to view: agent (default), errors, gateway, gui, or 'list' to show available files",
+        help="Log to view: agent (default), errors, gateway, gui, desktop, mcp, or 'list' to show available files",
     )
     logs_parser.add_argument(
         "-n",
         "--lines",
         type=int,
         default=50,
-        help="Number of lines to show (default: 50)",
+        help="Number of existing lines to show (default: 50, zero to skip history)",
     )
     logs_parser.add_argument(
         "-f",

@@ -2,6 +2,8 @@
 
 from datetime import datetime, timedelta
 
+import pytest
+
 
 from hermes_cli.logs import (
     LOG_FILES,
@@ -13,6 +15,8 @@ from hermes_cli.logs import (
     _parse_since,
     _read_last_n_lines,
     _read_tail,
+    list_logs,
+    tail_log,
 )
 
 
@@ -129,6 +133,18 @@ class TestMatchesFilters:
 # ---------------------------------------------------------------------------
 
 class TestReadTail:
+    @pytest.mark.parametrize("filters", [{}, {"has_filters": True, "min_level": "WARNING"}])
+    def test_zero_lines_skips_history(self, tmp_path, filters):
+        log = tmp_path / "agent.log"
+        log.write_text("2026-01-01 00:00:00 WARNING x: prior entry\n", encoding="utf-8")
+        assert _read_tail(log, 0, **filters) == []
+
+    def test_negative_line_count_is_rejected(self, capsys):
+        with pytest.raises(SystemExit) as failure:
+            tail_log(num_lines=-1)
+        assert failure.value.code != 0
+        assert "--lines" in capsys.readouterr().out
+
     def test_read_small_file(self, tmp_path):
         log_file = tmp_path / "test.log"
         lines = [f"2026-01-01 00:00:0{i} INFO x: line {i}\n" for i in range(10)]
@@ -149,3 +165,16 @@ class TestLogFiles:
         assert "errors" in LOG_FILES
         assert "gateway" in LOG_FILES
         assert "gui" in LOG_FILES
+
+
+def test_list_includes_numbered_rotations_only(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr("hermes_cli.logs.get_hermes_home", lambda: tmp_path)
+    log_dir = tmp_path / "logs"
+    log_dir.mkdir()
+    for name in ("agent.log", "agent.log.1", "gateway.log.12", "agent.log.bak", "agent.log.0"):
+        (log_dir / name).touch()
+    (log_dir / "ignored.log.3").mkdir()
+    list_logs()
+    output = capsys.readouterr().out.splitlines()
+    listed = {line.split()[0] for line in output if line.startswith("  ")}
+    assert listed == {"agent.log", "agent.log.1", "gateway.log.12"}
